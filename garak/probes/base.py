@@ -642,12 +642,14 @@ class IterativeProbe(Probe):
         this_attempt = this_init_attempt
         for _ in range(self.max_turns):
             self._generator_precall_hook(self.generator, this_attempt)
+            generator_input = this_attempt.conversations[0]
             print("*********")
-            print("In IterativeProbe _execute_attempt: this_attempt.prompt =", this_attempt.prompt)
+            print("In IterativeProbe _execute_attempt: generator_input =", generator_input)
             print("*********")
             _ = input("Press Enter to continue...")
+
             this_attempt.outputs = self.generator.generate(
-                this_attempt.prompt, generations_this_call=1
+                generator_input, generations_this_call=1
             ) # generations_this_call=1 here because assuming that multiple generations will require restartign from the first turn
             if self.post_buff_hook:
                 this_attempt = self._postprocess_buff(this_attempt)
@@ -656,8 +658,8 @@ class IterativeProbe(Probe):
             if self._should_terminate_conversation(this_attempt):
                 break
             else:
-                last_response = this_attempt.outputs[0]
-                this_attempt._add_turn(role="system", contents=[last_response])
+                # last_response = this_attempt.outputs[0]
+                # this_attempt._add_turn(role="assistant", contents=[last_response])
                 next_turn = self.get_next_turn(this_attempt)
                 this_attempt._add_turn(role="user", contents=[next_turn])
 
