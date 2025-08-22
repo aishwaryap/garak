@@ -322,7 +322,10 @@ class FITDProbe(garak.probes.IterativeProbe):
         }]) 
         print("In FITD _is_response_aligned: aligned_response =", aligned_response)
         _ = input("Press Enter to continue...")
-        return aligned_response == "Yes"
+        if aligned_response.strip().lower().startswith("yes"):
+            return True
+        else:
+            return False
 
     def _change_sensitive_words(self, target_prompt):
         """Replace sensitive words with more neutral alternatives."""
