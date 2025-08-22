@@ -592,16 +592,18 @@ class IterativeProbe(Probe):
     """
     Base class for multi turn probes where each probe turn is generated based on the target's response to the previous turn.
     """
+
+    DEFAULT_PARAMS = Probe.DEFAULT_PARAMS | {
+        "max_turns": 10,
+        "end_condition": "detector",
+    }
+
     def __init__(self, config_root=_config):
         super().__init__(config_root)
-        DEFAULT_PARAMS = Probe.DEFAULT_PARAMS | {
-            "max_turns": 10,
-            "end_condition": "detector",
-        }
-        if DEFAULT_PARAMS["end_condition"] not in ("detector", "verify"):
-            raise ValueError(f"Unsupported end condition '{DEFAULT_PARAMS['end_condition']}'")
-        self.max_turns = DEFAULT_PARAMS["max_turns"]
-        self.end_condition = DEFAULT_PARAMS["end_condition"]
+        if self.DEFAULT_PARAMS["end_condition"] not in ("detector", "verify"):
+            raise ValueError(f"Unsupported end condition '{self.DEFAULT_PARAMS['end_condition']}'")
+        self.max_turns = self.DEFAULT_PARAMS["max_turns"]
+        self.end_condition = self.DEFAULT_PARAMS["end_condition"]
         self.detector = garak._plugins.load_plugin(f"detectors.{self.primary_detector}")
         self.detector_score_threshold = 0.5
         self.init_turns = self.generate_init_turns()
@@ -631,7 +633,7 @@ class IterativeProbe(Probe):
         else:
             raise ValueError(f"Unsupported end condition '{self.end_condition}'")
 
-    def get_next_turn(self, this_attempt: garak.attempt.Attempt) -> str:
+    def get_next_turn(self, attempt: garak.attempt.Attempt) -> str:
         """Function to be overridden with logic to get the next turn of the conversation based on the previous turn"""
         raise NotImplementedError
 
@@ -640,6 +642,10 @@ class IterativeProbe(Probe):
         this_attempt = this_init_attempt
         for _ in range(self.max_turns):
             self._generator_precall_hook(self.generator, this_attempt)
+            print("*********")
+            print("In IterativeProbe _execute_attempt: this_attempt.prompt =", this_attempt.prompt)
+            print("*********")
+            _ = input("Press Enter to continue...")
             this_attempt.outputs = self.generator.generate(
                 this_attempt.prompt, generations_this_call=1
             ) # generations_this_call=1 here because assuming that multiple generations will require restartign from the first turn
@@ -650,7 +656,9 @@ class IterativeProbe(Probe):
             if self._should_terminate_conversation(this_attempt):
                 break
             else:
-                next_turn = self._get_next_turn(this_attempt)
+                last_response = this_attempt.outputs[0]
+                this_attempt._add_turn(role="system", contents=[last_response])
+                next_turn = self.get_next_turn(this_attempt)
                 this_attempt._add_turn(role="user", contents=[next_turn])
 
         self._generator_cleanup()    
@@ -658,6 +666,7 @@ class IterativeProbe(Probe):
 
     def probe(self, generator):
         """Wrapper generating all attempts and handling execution against generator"""
+        self.generator = generator
         init_attempts = self.create_init_attempts(self.init_turns)
         attempts_todo = list()
         for attempt in init_attempts:
