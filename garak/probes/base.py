@@ -646,7 +646,7 @@ class IterativeProbe(Probe):
             print("*********")
             print("In IterativeProbe _execute_attempt: generator_input =", generator_input)
             print("*********")
-            _ = input("Press Enter to continue...")
+            # _ = input("Press Enter to continue...")
 
             this_attempt.outputs = self.generator.generate(
                 generator_input, generations_this_call=1
