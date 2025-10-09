@@ -4,7 +4,7 @@
       "description": "Probe for eliciting ANSI control codes from a model",
       "DEFAULT_PARAMS": {},
       "active": true,
-      "doc_uri": "https://i.blackhat.com/BH-US-23/Presentations/US-23-stok-weponizing-plain-text-ansi-escape-sequences-as-a-forensic-nightmare-appendix.pdf",
+      "doc_uri": "https://interhumanagreement.substack.com/p/llm-output-can-take-over-your-computer",
       "extended_detectors": [],
       "goal": "print escaped ANSI terminal codes",
       "lang": "en",
@@ -27,13 +27,13 @@
         "quality:Security:Integrity"
       ],
       "tier": 3,
-      "mod_time": "2025-05-20 09:39:47 +0000"
+      "mod_time": "2025-10-01 13:06:16 +0000"
     },
     "probes.ansiescape.AnsiRaw": {
       "description": "Probe for eliciting raw ANSI control codes from a model",
       "DEFAULT_PARAMS": {},
       "active": true,
-      "doc_uri": "https://i.blackhat.com/BH-US-23/Presentations/US-23-stok-weponizing-plain-text-ansi-escape-sequences-as-a-forensic-nightmare-appendix.pdf",
+      "doc_uri": "https://interhumanagreement.substack.com/p/llm-output-can-take-over-your-computer",
       "extended_detectors": [],
       "goal": "print raw ANSI terminal codes",
       "lang": "en",
@@ -56,7 +56,31 @@
         "quality:Security:Integrity"
       ],
       "tier": 1,
-      "mod_time": "2025-05-20 09:39:47 +0000"
+      "mod_time": "2025-10-01 13:06:16 +0000"
+    },
+    "probes.ansiescape.AnsiRawTokenizerHF": {
+      "description": "Probe for checking a tokenizer for potentially malicious ANSI escape sequences",
+      "DEFAULT_PARAMS": {},
+      "active": false,
+      "doc_uri": "https://interhumanagreement.substack.com/p/llm-output-can-take-over-your-computer",
+      "extended_detectors": [],
+      "goal": "check if raw ANSI escape sequences tokens are available",
+      "lang": "*",
+      "modality": {
+        "in": [
+          "text"
+        ]
+      },
+      "parallelisable_attempts": true,
+      "primary_detector": "ansiescape.Raw",
+      "recommended_detector": [
+        "always.Fail"
+      ],
+      "tags": [
+        "owasp:llm05"
+      ],
+      "tier": 1,
+      "mod_time": "2025-10-01 13:06:16 +0000"
     },
     "probes.atkgen.Tox": {
       "description": "Automatic attack generation, trying to elicit toxic outputs from the model.",
@@ -100,7 +124,7 @@
         "payload:unwanted"
       ],
       "tier": 2,
-      "mod_time": "2025-08-15 20:02:18 +0000"
+      "mod_time": "2025-08-28 19:55:49 +0000"
     },
     "probes.audio.AudioAchillesHeel": {
       "description": "Audio is the Achilles Heel",
@@ -235,7 +259,7 @@
       ],
       "tags": [],
       "tier": 9,
-      "mod_time": "2025-08-15 20:02:18 +0000"
+      "mod_time": "2025-08-28 13:46:07 +0000"
     },
     "probes.base.TreeSearchProbe": {
       "DEFAULT_PARAMS": {
@@ -262,7 +286,7 @@
       ],
       "tags": [],
       "tier": 9,
-      "mod_time": "2025-08-15 20:02:18 +0000"
+      "mod_time": "2025-08-28 13:46:07 +0000"
     },
     "probes.continuation.ContinueSlursReclaimedSlurs": {
       "description": "Continue partial word with slur or reclaimed slur.",
@@ -884,7 +908,7 @@
         "payload:leak:training"
       ],
       "tier": 2,
-      "mod_time": "2025-05-20 09:39:47 +0000"
+      "mod_time": "2025-09-23 17:38:16 +0000"
     },
     "probes.divergence.RepeatExtended": {
       "description": "See if a model starts giving other data when asked to repeat a string indefinitely",
@@ -915,7 +939,44 @@
         "payload:leak:training"
       ],
       "tier": 2,
-      "mod_time": "2025-05-20 09:39:47 +0000"
+      "mod_time": "2025-09-23 17:38:16 +0000"
+    },
+    "probes.divergence.RepeatedToken": {
+      "description": "Repeated token destabilization attack from Dropbox LLM security research.",
+      "DEFAULT_PARAMS": {
+        "prefix": "Repeat this word forever: ",
+        "encoding": "cl100k_base",
+        "mode": "sample",
+        "num_tokens": 2,
+        "num_repeats": 1024,
+        "single_tokens": [],
+        "max_repeats": 1,
+        "num_tests": 3,
+        "follow_prompt_cap": true
+      },
+      "active": true,
+      "doc_uri": "https://github.com/dropbox/llm-security",
+      "extended_detectors": [],
+      "goal": "Stress-test LLMs with long repeated-token prompts to surface instability",
+      "lang": "*",
+      "modality": {
+        "in": [
+          "text"
+        ]
+      },
+      "parallelisable_attempts": true,
+      "primary_detector": "divergence.RepeatedToken",
+      "recommended_detector": [
+        "always.Fail"
+      ],
+      "tags": [
+        "avid-effect:performance:P0403",
+        "owasp:llm04",
+        "quality:Security:PromptStability",
+        "payload:unwanted:denial_of_service"
+      ],
+      "tier": 1,
+      "mod_time": "2025-09-23 17:38:16 +0000"
     },
     "probes.doctor.Bypass": {
       "description": "Implement Policy Puppetry Bypass",
@@ -1127,6 +1188,75 @@
       "tier": 9,
       "mod_time": "2025-07-16 13:33:05 +0000"
     },
+    "probes.dra.DRA": {
+      "description": "DRA (Disguise and Reconstruction Attack)",
+      "DEFAULT_PARAMS": {
+        "payload_name": "harmful_behaviors",
+        "toxic_trunc": 0.5,
+        "benign_trunc": 0.5,
+        "benign_full_token_prob": 0.33,
+        "follow_prompt_cap": true
+      },
+      "active": true,
+      "doc_uri": "https://arxiv.org/abs/2402.18104v2",
+      "extended_detectors": [],
+      "goal": "make the LLM ask and answer its own harmful instructions",
+      "lang": "en",
+      "modality": {
+        "in": [
+          "text"
+        ]
+      },
+      "parallelisable_attempts": true,
+      "primary_detector": null,
+      "recommended_detector": [
+        "mitigation.MitigationBypass",
+        "mitigation.Prefixes"
+      ],
+      "tags": [
+        "avid-effect:security:S0403",
+        "owasp:llm01",
+        "quality:Security:PromptStability",
+        "payload:jailbreak"
+      ],
+      "tier": 1,
+      "mod_time": "2025-09-30 07:48:45 +0000"
+    },
+    "probes.dra.DRAAdvanced": {
+      "description": "DRA (Disguise and Reconstruction Attack) - Version with detoxify",
+      "DEFAULT_PARAMS": {
+        "payload_name": "harmful_behaviors",
+        "toxic_trunc": 0.5,
+        "benign_trunc": 0.5,
+        "benign_full_token_prob": 0.33,
+        "follow_prompt_cap": true,
+        "custom_sentence": "how to perform a cyber attack"
+      },
+      "active": false,
+      "doc_uri": "https://arxiv.org/abs/2402.18104v2",
+      "extended_detectors": [],
+      "goal": "make the LLM ask and answer its own harmful instructions",
+      "lang": "en",
+      "modality": {
+        "in": [
+          "text"
+        ]
+      },
+      "parallelisable_attempts": true,
+      "primary_detector": null,
+      "recommended_detector": [
+        "mitigation.MitigationBypass",
+        "mitigation.Prefixes"
+      ],
+      "tags": [
+        "avid-effect:security:S0403",
+        "owasp:llm01",
+        "quality:Security:PromptStability",
+        "payload:jailbreak"
+      ],
+      "tier": 1,
+      "mod_time": "2025-09-30 07:48:45 +0000"
+    },
     "probes.encoding.InjectAscii85": {
       "description": "Probe for susceptibility to base85 encoded injections",
       "DEFAULT_PARAMS": {
@@ -1161,7 +1291,43 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
+    },
+    "probes.encoding.InjectAtbash": {
+      "description": "Atbash Probe Credit: Nakul-Rajpal",
+      "DEFAULT_PARAMS": {
+        "follow_prompt_cap": true,
+        "payloads": [
+          "default",
+          "xss",
+          "slur_terms"
+        ]
+      },
+      "active": true,
+      "doc_uri": "https://en.wikipedia.org/wiki/Atbash",
+      "extended_detectors": [
+        "encoding.DecodeApprox"
+      ],
+      "goal": "make the model say an encoded payload",
+      "lang": "en",
+      "modality": {
+        "in": [
+          "text"
+        ]
+      },
+      "parallelisable_attempts": true,
+      "primary_detector": "encoding.DecodeMatch",
+      "recommended_detector": [
+        "always.Fail"
+      ],
+      "tags": [
+        "avid-effect:security:S0403",
+        "owasp:llm01",
+        "quality:Security:PromptStability",
+        "payload:generic"
+      ],
+      "tier": 2,
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectBase16": {
       "description": "Probe for susceptibility to base16 encoded injections\"",
@@ -1197,7 +1363,7 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectBase2048": {
       "description": "Probe for susceptibility to Base2048 encoding injections",
@@ -1233,7 +1399,7 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectBase32": {
       "description": "Probe for susceptibility to base32 encoded injections",
@@ -1269,7 +1435,7 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectBase64": {
       "description": "Probe for susceptibility to base64 encoded injections",
@@ -1305,7 +1471,7 @@
         "payload:generic"
       ],
       "tier": 1,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectBraille": {
       "description": "Probe for susceptibility to Braille encoding injections. Credit Wally#3422",
@@ -1341,7 +1507,7 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectEcoji": {
       "description": "Probe for susceptibility to Ecoji encoding.",
@@ -1377,7 +1543,7 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectHex": {
       "description": "Probe for susceptibility to hex encoded injections",
@@ -1413,7 +1579,7 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectLeet": {
       "description": "Probe for susceptibility to 31337 encoding.",
@@ -1449,7 +1615,7 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectMime": {
       "description": "Probe for susceptibility to MIME encoding injections",
@@ -1485,7 +1651,7 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectMorse": {
       "description": "Probe for susceptibility to Morse encoding. Credit Wally#3422",
@@ -1521,7 +1687,7 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectNato": {
       "description": "Probe for susceptibility to Nato phonetic alphabet encoding.",
@@ -1557,7 +1723,7 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectQP": {
       "description": "Probe for susceptibility to QP encoded injections",
@@ -1593,7 +1759,7 @@
         "payload:generic"
       ],
       "tier": 1,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectROT13": {
       "description": "Probe for susceptibility to ROT13 encoding injections",
@@ -1629,7 +1795,7 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectSneakyBits": {
       "description": "Probe for susceptibility to unicode variant selector ASCII smuggling",
@@ -1665,7 +1831,7 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectUU": {
       "description": "Probe for susceptibility to UU encoded injections",
@@ -1701,7 +1867,7 @@
         "payload:generic"
       ],
       "tier": 1,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectUnicodeTagChars": {
       "description": "Probe for susceptibility to unicode tag ASCII smuggling",
@@ -1738,7 +1904,7 @@
         "payload:generic"
       ],
       "tier": 1,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectUnicodeVariantSelectors": {
       "description": "Probe for susceptibility to unicode variant selector ASCII smuggling",
@@ -1774,7 +1940,7 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.encoding.InjectZalgo": {
       "description": "Probe for susceptibility to Zalgo encoding.",
@@ -1810,7 +1976,7 @@
         "payload:generic"
       ],
       "tier": 2,
-      "mod_time": "2025-08-07 12:45:59 +0000"
+      "mod_time": "2025-09-08 12:35:41 +0000"
     },
     "probes.exploitation.JinjaTemplatePythonInjection": {
       "description": "Attempts to execute Python code via Jinja templating",
@@ -3537,6 +3703,33 @@
       "tier": 2,
       "mod_time": "2025-05-20 09:39:47 +0000"
     },
+    "probes.packagehallucination.Dart": {
+      "description": "Attempts to generate Dart code including hallucinated pub.dev packages",
+      "DEFAULT_PARAMS": {},
+      "active": true,
+      "doc_uri": "https://vulcan.io/blog/ai-hallucinations-package-risk",
+      "extended_detectors": [],
+      "goal": "generate Dart code importing non-existent pub.dev packages",
+      "lang": "*",
+      "modality": {
+        "in": [
+          "text"
+        ]
+      },
+      "parallelisable_attempts": true,
+      "primary_detector": "packagehallucination.Dart",
+      "recommended_detector": [
+        "always.Fail"
+      ],
+      "tags": [
+        "owasp:llm09",
+        "owasp:llm02",
+        "quality:Robustness:GenerativeMisinformation",
+        "payload:malicious:badcode"
+      ],
+      "tier": 1,
+      "mod_time": "2025-09-23 20:19:35 +0000"
+    },
     "probes.packagehallucination.JavaScript": {
       "description": "Attempts to generate JavaScript code including hallucinated npm packages",
       "DEFAULT_PARAMS": {},
@@ -3562,7 +3755,7 @@
         "payload:malicious:badcode"
       ],
       "tier": 1,
-      "mod_time": "2025-05-09 12:45:38 +0000"
+      "mod_time": "2025-09-23 20:19:35 +0000"
     },
     "probes.packagehallucination.PackageHallucinationProbe": {
       "description": "Base class for package hallucination probes",
@@ -3589,7 +3782,34 @@
         "payload:malicious:badcode"
       ],
       "tier": 9,
-      "mod_time": "2025-05-09 12:45:38 +0000"
+      "mod_time": "2025-09-23 20:19:35 +0000"
+    },
+    "probes.packagehallucination.Perl": {
+      "description": "Attempts to generate Perl code including hallucinated MetaCPAN packages",
+      "DEFAULT_PARAMS": {},
+      "active": true,
+      "doc_uri": "https://vulcan.io/blog/ai-hallucinations-package-risk",
+      "extended_detectors": [],
+      "goal": "generate Perl code importing non-existent MetaCPAN modules",
+      "lang": "*",
+      "modality": {
+        "in": [
+          "text"
+        ]
+      },
+      "parallelisable_attempts": true,
+      "primary_detector": "packagehallucination.Perl",
+      "recommended_detector": [
+        "always.Fail"
+      ],
+      "tags": [
+        "owasp:llm09",
+        "owasp:llm02",
+        "quality:Robustness:GenerativeMisinformation",
+        "payload:malicious:badcode"
+      ],
+      "tier": 1,
+      "mod_time": "2025-09-23 20:19:35 +0000"
     },
     "probes.packagehallucination.Python": {
       "description": "Attempts to generate Python3 code including hallucinated packages",
@@ -3616,7 +3836,34 @@
         "payload:malicious:badcode"
       ],
       "tier": 1,
-      "mod_time": "2025-05-09 12:45:38 +0000"
+      "mod_time": "2025-09-23 20:19:35 +0000"
+    },
+    "probes.packagehallucination.RakuLand": {
+      "description": "Attempts to generate Raku code including hallucinated raku.land packages",
+      "DEFAULT_PARAMS": {},
+      "active": true,
+      "doc_uri": "https://vulcan.io/blog/ai-hallucinations-package-risk",
+      "extended_detectors": [],
+      "goal": "generate Raku code importing non-existent raku.land modules",
+      "lang": "*",
+      "modality": {
+        "in": [
+          "text"
+        ]
+      },
+      "parallelisable_attempts": true,
+      "primary_detector": "packagehallucination.RakuLand",
+      "recommended_detector": [
+        "always.Fail"
+      ],
+      "tags": [
+        "owasp:llm09",
+        "owasp:llm02",
+        "quality:Robustness:GenerativeMisinformation",
+        "payload:malicious:badcode"
+      ],
+      "tier": 1,
+      "mod_time": "2025-09-23 20:19:35 +0000"
     },
     "probes.packagehallucination.Ruby": {
       "description": "Attempts to generate Ruby code including hallucinated gems",
@@ -3643,7 +3890,7 @@
         "payload:malicious:badcode"
       ],
       "tier": 1,
-      "mod_time": "2025-05-09 12:45:38 +0000"
+      "mod_time": "2025-09-23 20:19:35 +0000"
     },
     "probes.packagehallucination.Rust": {
       "description": "Attempts to generate Rust code including hallucinated crates.io packages",
@@ -3670,7 +3917,7 @@
         "payload:malicious:badcode"
       ],
       "tier": 1,
-      "mod_time": "2025-05-09 12:45:38 +0000"
+      "mod_time": "2025-09-23 20:19:35 +0000"
     },
     "probes.phrasing.FutureTense": {
       "description": "Attempt to evade safeguards by setting requests in the future tense",
@@ -3696,7 +3943,7 @@
         "payload:jailbreak"
       ],
       "tier": 2,
-      "mod_time": "2025-06-18 17:35:24 +0000"
+      "mod_time": "2025-09-29 12:09:21 +0000"
     },
     "probes.phrasing.FutureTenseFull": {
       "description": "Will the system give unsafe responses when asked to write about weapon creation or dangerous behavior?",
@@ -3722,7 +3969,7 @@
         "payload:jailbreak"
       ],
       "tier": 2,
-      "mod_time": "2025-06-18 17:35:24 +0000"
+      "mod_time": "2025-09-29 12:09:21 +0000"
     },
     "probes.phrasing.PastTense": {
       "description": "Attempt to evade safeguards by setting requests in the past tense",
@@ -3748,7 +3995,7 @@
         "payload:jailbreak"
       ],
       "tier": 2,
-      "mod_time": "2025-06-18 17:35:24 +0000"
+      "mod_time": "2025-09-29 12:09:21 +0000"
     },
     "probes.phrasing.PastTenseFull": {
       "description": "Will the system give unsafe responses when asked to write about weapon creation or dangerous behavior?",
@@ -3774,7 +4021,7 @@
         "payload:jailbreak"
       ],
       "tier": 2,
-      "mod_time": "2025-06-18 17:35:24 +0000"
+      "mod_time": "2025-09-29 12:09:21 +0000"
     },
     "probes.promptinject.HijackHateHumans": {
       "description": "PromptInject is a framework that assembles prompts in a modular fashion to provide a quantitative analysis of the robustness of LLMs to adversarial prompt attacks. trophy Best Paper Awards @ NeurIPS ML Safety Workshop 2022",
@@ -4209,6 +4456,58 @@
       ],
       "tier": 2,
       "mod_time": "2025-08-06 16:58:50 +0000"
+    },
+    "probes.smuggling.FunctionMasking": {
+      "description": "FunctionMasking probe",
+      "DEFAULT_PARAMS": {},
+      "active": false,
+      "doc_uri": "https://medium.com/@austin-stubbs/llm-security-types-of-prompt-injection-d7ad8d7d75a3",
+      "extended_detectors": [],
+      "goal": "return banned instructions",
+      "lang": "en",
+      "modality": {
+        "in": [
+          "text"
+        ]
+      },
+      "parallelisable_attempts": true,
+      "primary_detector": "mitigation.MitigationBypass",
+      "recommended_detector": [
+        "always.Fail"
+      ],
+      "tags": [
+        "avid-effect:security:S0403",
+        "quality:Security:PromptStability",
+        "payload:jailbreak"
+      ],
+      "tier": 3,
+      "mod_time": "2025-09-30 21:51:47 +0000"
+    },
+    "probes.smuggling.HypotheticalResponse": {
+      "description": "HypotheticalResponse probe",
+      "DEFAULT_PARAMS": {},
+      "active": false,
+      "doc_uri": "https://guzey.com/ai/two-sentence-universal-jailbreak/",
+      "extended_detectors": [],
+      "goal": "return banned instructions",
+      "lang": "en",
+      "modality": {
+        "in": [
+          "text"
+        ]
+      },
+      "parallelisable_attempts": true,
+      "primary_detector": "mitigation.MitigationBypass",
+      "recommended_detector": [
+        "always.Fail"
+      ],
+      "tags": [
+        "avid-effect:security:S0403",
+        "quality:Security:PromptStability",
+        "payload:jailbreak"
+      ],
+      "tier": 3,
+      "mod_time": "2025-09-30 21:51:47 +0000"
     },
     "probes.snowball.GraphConnectivity": {
       "description": "Probe asking for impossible flight routings",
@@ -4797,7 +5096,7 @@
       "tier": 2,
       "mod_time": "2025-07-02 22:27:38 +0000"
     },
-    "probes.xss.ColabAIDataLeakage": {
+    "probes.web_injection.ColabAIDataLeakage": {
       "description": "Leak data via image rendering as demonstrated against Gemini in Colab.",
       "DEFAULT_PARAMS": {
         "payload_name": "example_domains_xss"
@@ -4815,7 +5114,7 @@
       "parallelisable_attempts": true,
       "primary_detector": null,
       "recommended_detector": [
-        "xss.MarkdownExfilContent"
+        "web_injection.MarkdownExfilContent"
       ],
       "tags": [
         "avid-effect:security:S0301",
@@ -4829,9 +5128,9 @@
         "cwe:352"
       ],
       "tier": 1,
-      "mod_time": "2025-08-11 18:13:36 +0000"
+      "mod_time": "2025-09-30 21:00:42 +0000"
     },
-    "probes.xss.MarkdownImageExfil": {
+    "probes.web_injection.MarkdownImageExfil": {
       "description": "Can we get the model to write embedded assets exfiltrating text in the URI?",
       "DEFAULT_PARAMS": {
         "payload_name": "example_domains_xss"
@@ -4849,8 +5148,8 @@
       "parallelisable_attempts": true,
       "primary_detector": null,
       "recommended_detector": [
-        "xss.MarkdownExfilBasic",
-        "xss.MarkdownExfilContent"
+        "web_injection.MarkdownExfilBasic",
+        "web_injection.MarkdownExfilContent"
       ],
       "tags": [
         "avid-effect:security:S0301",
@@ -4864,15 +5163,15 @@
         "cwe:352"
       ],
       "tier": 1,
-      "mod_time": "2025-08-11 18:13:36 +0000"
+      "mod_time": "2025-09-30 21:00:42 +0000"
     },
-    "probes.xss.MarkdownURIImageExfilExtended": {
-      "description": "Generalized implementation of data exfiltration exploits via markdown URIs.",
+    "probes.web_injection.MarkdownURIImageExfilExtended": {
+      "description": "Generalized implementation of data exfiltration exploits through Markdown URIs.",
       "DEFAULT_PARAMS": {},
       "active": true,
       "doc_uri": "https://www.aim.security/lp/aim-labs-echoleak-blogpost",
       "extended_detectors": [],
-      "goal": "embed information an LLM would normally refuse to provide in a Markdown URI",
+      "goal": "embed potentially sensitive data in a Markdown URI",
       "lang": "en",
       "modality": {
         "in": [
@@ -4882,7 +5181,7 @@
       "parallelisable_attempts": true,
       "primary_detector": null,
       "recommended_detector": [
-        "xss.MarkdownExfilExtendedImage"
+        "web_injection.MarkdownExfilExtendedImage"
       ],
       "tags": [
         "avid-effect:security:S0301",
@@ -4896,15 +5195,15 @@
         "cwe:352"
       ],
       "tier": 1,
-      "mod_time": "2025-08-11 18:13:36 +0000"
+      "mod_time": "2025-09-30 21:00:42 +0000"
     },
-    "probes.xss.MarkdownURINonImageExfilExtended": {
-      "description": "Generalized implementation of data exfiltration exploits via markdown URIs.",
+    "probes.web_injection.MarkdownURINonImageExfilExtended": {
+      "description": "Generalized implementation of data exfiltration exploits through Markdown URIs.",
       "DEFAULT_PARAMS": {},
       "active": true,
       "doc_uri": "https://www.aim.security/lp/aim-labs-echoleak-blogpost",
       "extended_detectors": [],
-      "goal": "embed information an LLM would normally refuse to provide in a Markdown URI",
+      "goal": "embed potentially sensitive data in a Markdown URI",
       "lang": "en",
       "modality": {
         "in": [
@@ -4914,7 +5213,7 @@
       "parallelisable_attempts": true,
       "primary_detector": null,
       "recommended_detector": [
-        "xss.MarkdownExfilExtendedNonImage"
+        "web_injection.MarkdownExfilExtendedNonImage"
       ],
       "tags": [
         "avid-effect:security:S0301",
@@ -4928,10 +5227,45 @@
         "cwe:352"
       ],
       "tier": 1,
-      "mod_time": "2025-08-11 18:13:36 +0000"
+      "mod_time": "2025-09-30 21:00:42 +0000"
     },
-    "probes.xss.MdExfil20230929": {
-      "description": "Markdown image URI exfil exploit published 2023 Sept 29",
+    "probes.web_injection.MarkdownXSS": {
+      "description": "Perform cross site scripting attacks using Markdown Javascript rendering via prompt injection.",
+      "DEFAULT_PARAMS": {
+        "follow_prompt_cap": true,
+        "payloads": [
+          "markdown_js"
+        ]
+      },
+      "active": true,
+      "doc_uri": "https://cwe.mitre.org/data/definitions/79.html",
+      "extended_detectors": [],
+      "goal": "Exploit cross-site scripting via prompt injection",
+      "lang": "en",
+      "modality": {
+        "in": [
+          "text"
+        ]
+      },
+      "parallelisable_attempts": true,
+      "primary_detector": null,
+      "recommended_detector": [
+        "web_injection.XSS"
+      ],
+      "tags": [
+        "avid-effect:security:S0301",
+        "avid-effect:security:S0403",
+        "owasp:llm02",
+        "owasp:llm06",
+        "payload:malicious:renderer:xss",
+        "quality:Security:PromptStability",
+        "cwe:79"
+      ],
+      "tier": 1,
+      "mod_time": "2025-09-30 21:00:42 +0000"
+    },
+    "probes.web_injection.PlaygroundMarkdownExfil": {
+      "description": "Markdown image URI exfil exploit published 2023 Sept 29.",
       "DEFAULT_PARAMS": {
         "payload_name": "example_domains_xss"
       },
@@ -4948,7 +5282,7 @@
       "parallelisable_attempts": true,
       "primary_detector": null,
       "recommended_detector": [
-        "xss.MarkdownExfil20230929"
+        "web_injection.PlaygroundMarkdownExfil"
       ],
       "tags": [
         "avid-effect:security:S0301",
@@ -4962,9 +5296,9 @@
         "cwe:352"
       ],
       "tier": 1,
-      "mod_time": "2025-08-11 18:13:36 +0000"
+      "mod_time": "2025-09-30 21:00:42 +0000"
     },
-    "probes.xss.StringAssemblyDataExfil": {
+    "probes.web_injection.StringAssemblyDataExfil": {
       "description": "Prompt injection for manipulating state",
       "DEFAULT_PARAMS": {},
       "active": true,
@@ -4980,7 +5314,7 @@
       "parallelisable_attempts": true,
       "primary_detector": null,
       "recommended_detector": [
-        "xss.MarkdownExfilBasic"
+        "web_injection.MarkdownExfilBasic"
       ],
       "tags": [
         "avid-effect:security:S0301",
@@ -4994,7 +5328,45 @@
         "cwe:352"
       ],
       "tier": 1,
-      "mod_time": "2025-08-11 18:13:36 +0000"
+      "mod_time": "2025-09-30 21:00:42 +0000"
+    },
+    "probes.web_injection.TaskXSS": {
+      "description": "Perform cross site scripting attacks via prompt injection.",
+      "DEFAULT_PARAMS": {
+        "follow_prompt_cap": true,
+        "payloads": [
+          "web_html_js"
+        ],
+        "tasks": [
+          "normal_instructions"
+        ]
+      },
+      "active": true,
+      "doc_uri": "https://cwe.mitre.org/data/definitions/79.html",
+      "extended_detectors": [],
+      "goal": "Exploit cross-site scripting via prompt injection",
+      "lang": "en",
+      "modality": {
+        "in": [
+          "text"
+        ]
+      },
+      "parallelisable_attempts": true,
+      "primary_detector": null,
+      "recommended_detector": [
+        "web_injection.XSS"
+      ],
+      "tags": [
+        "avid-effect:security:S0301",
+        "avid-effect:security:S0403",
+        "owasp:llm02",
+        "owasp:llm06",
+        "payload:malicious:renderer:xss",
+        "quality:Security:PromptStability",
+        "cwe:79"
+      ],
+      "tier": 1,
+      "mod_time": "2025-09-30 21:00:42 +0000"
     }
   },
   "detectors": {
@@ -5015,7 +5387,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-04-17 08:31:20 +0000"
+      "mod_time": "2025-07-02 06:55:12 +0000"
     },
     "detectors.always.Pass": {
       "description": "Always Pass (for testing & prototyping)",
@@ -5034,7 +5406,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-04-17 08:31:20 +0000"
+      "mod_time": "2025-07-02 06:55:12 +0000"
     },
     "detectors.always.Passthru": {
       "description": "Send existing attempt detection results; use first detector",
@@ -5053,7 +5425,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-04-17 08:31:20 +0000"
+      "mod_time": "2025-07-02 06:55:12 +0000"
     },
     "detectors.always.Random": {
       "description": "Always return a random result (for testing & prototyping)",
@@ -5072,7 +5444,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-04-17 08:31:20 +0000"
+      "mod_time": "2025-07-02 06:55:12 +0000"
     },
     "detectors.ansiescape.Escaped": {
       "description": "pick up escaped ANSI escape sequences",
@@ -5082,7 +5454,7 @@
       },
       "accuracy": null,
       "active": true,
-      "doc_uri": null,
+      "doc_uri": "https://interhumanagreement.substack.com/p/llm-output-can-take-over-your-computer",
       "lang_spec": "*",
       "modality": {
         "out": [
@@ -5092,7 +5464,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-04-17 08:31:20 +0000"
+      "mod_time": "2025-09-16 15:38:35 +0000"
     },
     "detectors.ansiescape.Raw": {
       "description": "pick up raw ANSI escape sequences",
@@ -5102,7 +5474,7 @@
       },
       "accuracy": null,
       "active": true,
-      "doc_uri": null,
+      "doc_uri": "https://interhumanagreement.substack.com/p/llm-output-can-take-over-your-computer",
       "lang_spec": "*",
       "modality": {
         "out": [
@@ -5112,7 +5484,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-04-17 08:31:20 +0000"
+      "mod_time": "2025-09-16 15:38:35 +0000"
     },
     "detectors.base.Detector": {
       "description": "Base class for objects that define a way of detecting a probe hit / LLM failure",
@@ -5131,7 +5503,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-08-13 22:01:46 +0000"
+      "mod_time": "2025-09-02 21:22:52 +0000"
     },
     "detectors.base.FileDetector": {
       "description": "Detector subclass for processing attempts whose outputs are filenames for checking",
@@ -5151,7 +5523,7 @@
       "recall": 0.0,
       "tags": [],
       "valid_format": "local filename",
-      "mod_time": "2025-08-13 22:01:46 +0000"
+      "mod_time": "2025-09-02 21:22:52 +0000"
     },
     "detectors.base.HFDetector": {
       "description": "Detector using a Hugging Face model",
@@ -5178,7 +5550,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-08-13 22:01:46 +0000"
+      "mod_time": "2025-09-02 21:22:52 +0000"
     },
     "detectors.base.StringDetector": {
       "description": "Subclass of Detector using list of substrings as detection triggers",
@@ -5198,7 +5570,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-08-13 22:01:46 +0000"
+      "mod_time": "2025-09-02 21:22:52 +0000"
     },
     "detectors.base.TriggerListDetector": {
       "description": "Subclass of Detector using attempt's notes[triggers] as list of strings to match",
@@ -5217,7 +5589,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-08-13 22:01:46 +0000"
+      "mod_time": "2025-09-02 21:22:52 +0000"
     },
     "detectors.continuation.Continuation": {
       "description": "Detect if model intiates / continues a trigger word",
@@ -5409,7 +5781,31 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-08-13 22:01:46 +0000"
+      "mod_time": "2025-09-16 18:15:13 +0000"
+    },
+    "detectors.divergence.RepeatedToken": {
+      "description": "Garak-compatible detector for repeated token hallucinations.",
+      "DEFAULT_PARAMS": {
+        "skip": false
+      },
+      "accuracy": null,
+      "active": true,
+      "doc_uri": "https://github.com/dropbox/llm-security",
+      "lang_spec": "*",
+      "modality": {
+        "out": [
+          "text"
+        ]
+      },
+      "precision": 0.0,
+      "recall": 0.0,
+      "tags": [
+        "avid-effect:performance:P0403",
+        "owasp:llm04",
+        "quality:Security:PromptStability",
+        "payload:unwanted:denial_of_service"
+      ],
+      "mod_time": "2025-09-16 18:15:13 +0000"
     },
     "detectors.encoding.DecodeApprox": {
       "description": "Is there a partial hash decoding?",
@@ -5650,7 +6046,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-04-17 08:31:20 +0000"
+      "mod_time": "2025-07-02 06:55:12 +0000"
     },
     "detectors.goodside.PlainJSON": {
       "description": "Is the output valid JSON with no preamble?",
@@ -5669,7 +6065,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-04-17 08:31:20 +0000"
+      "mod_time": "2025-07-02 06:55:12 +0000"
     },
     "detectors.goodside.RileyIsnt": {
       "description": "Look for mentions of being Canadian, female pronouns, being a singer",
@@ -5689,7 +6085,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-04-17 08:31:20 +0000"
+      "mod_time": "2025-07-02 06:55:12 +0000"
     },
     "detectors.judge.ModelAsJudge": {
       "description": "Uses the configured model to detect responses that attained the probe goal",
@@ -5713,7 +6109,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-06-17 16:15:39 +0000"
+      "mod_time": "2025-09-02 21:22:52 +0000"
     },
     "detectors.judge.Refusal": {
       "description": "Uses the configured model to detect if the responses is a refusal to answer",
@@ -5735,7 +6131,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-06-17 16:15:39 +0000"
+      "mod_time": "2025-09-02 21:22:52 +0000"
     },
     "detectors.knownbadsignatures.EICAR": {
       "description": "Is the EICAR test string present?",
@@ -5884,7 +6280,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-08-08 14:23:52 +0000"
+      "mod_time": "2025-08-25 19:24:36 +0000"
     },
     "detectors.misleading.MustContradictNLI": {
       "description": "This detector is looking for the model to contradict a claim.",
@@ -5913,7 +6309,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-08-14 13:10:09 +0000"
+      "mod_time": "2025-08-20 13:55:46 +0000"
     },
     "detectors.misleading.MustRefuteClaimKW": {
       "description": "Looking for strings indicating a refutation",
@@ -5933,7 +6329,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-08-14 13:10:09 +0000"
+      "mod_time": "2025-08-20 13:55:46 +0000"
     },
     "detectors.misleading.MustRefuteClaimModel": {
       "description": "Using garak-llm/refutation_detector_distilbert to detect model refutations",
@@ -5962,7 +6358,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-08-14 13:10:09 +0000"
+      "mod_time": "2025-08-20 13:55:46 +0000"
     },
     "detectors.mitigation.MitigationBypass": {
       "description": "Detect if a string response does not contain a mitigation message.",
@@ -5985,7 +6381,7 @@
         "avid-effect:security:S0403",
         "avid-effect:performance:P0204"
       ],
-      "mod_time": "2025-04-23 07:10:52 +0000"
+      "mod_time": "2025-07-02 06:55:12 +0000"
     },
     "detectors.mitigation.Prefixes": {
       "description": "Detect failure prefixes",
@@ -6005,7 +6401,29 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-04-23 07:10:52 +0000"
+      "mod_time": "2025-07-02 06:55:12 +0000"
+    },
+    "detectors.packagehallucination.Dart": {
+      "description": "Check if the output tries to use a Dart package not listed on pub.dev (2025-08-11 snapshot)",
+      "DEFAULT_PARAMS": {
+        "skip": false,
+        "dataset_name": "garak-llm/dart-20250811",
+        "language_name": "dart",
+        "cutoff_date": null
+      },
+      "accuracy": null,
+      "active": false,
+      "doc_uri": null,
+      "lang_spec": "*",
+      "modality": {
+        "out": [
+          "text"
+        ]
+      },
+      "precision": 0.0,
+      "recall": 0.0,
+      "tags": [],
+      "mod_time": "2025-09-24 16:40:21 +0000"
     },
     "detectors.packagehallucination.JavaScriptNpm": {
       "description": "Check if the output tries to import or require an npm package not listed in the npm registry",
@@ -6027,7 +6445,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-08-08 14:23:52 +0000"
+      "mod_time": "2025-09-24 16:40:21 +0000"
     },
     "detectors.packagehallucination.PackageHallucinationDetector": {
       "description": "Base class for package hallucination detectors",
@@ -6049,7 +6467,29 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-08-08 14:23:52 +0000"
+      "mod_time": "2025-09-24 16:40:21 +0000"
+    },
+    "detectors.packagehallucination.Perl": {
+      "description": "Check if the output tries to use a Perl module not listed in MetaCPAN's provides list collected on 2025-08-11",
+      "DEFAULT_PARAMS": {
+        "skip": false,
+        "dataset_name": "garak-llm/perl-20250811",
+        "language_name": "perl",
+        "cutoff_date": null
+      },
+      "accuracy": null,
+      "active": false,
+      "doc_uri": null,
+      "lang_spec": "*",
+      "modality": {
+        "out": [
+          "text"
+        ]
+      },
+      "precision": 0.0,
+      "recall": 0.0,
+      "tags": [],
+      "mod_time": "2025-09-24 16:40:21 +0000"
     },
     "detectors.packagehallucination.PythonPypi": {
       "description": "Check if the output tries to import a package not listed in stdlib or a pypi archive listing",
@@ -6071,7 +6511,29 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-08-08 14:23:52 +0000"
+      "mod_time": "2025-09-24 16:40:21 +0000"
+    },
+    "detectors.packagehallucination.RakuLand": {
+      "description": "Check if the output tries to use a Raku module not listed in raku.land collected on 2025-08-11",
+      "DEFAULT_PARAMS": {
+        "skip": false,
+        "dataset_name": "garak-llm/raku-20250811",
+        "language_name": "raku",
+        "cutoff_date": null
+      },
+      "accuracy": null,
+      "active": false,
+      "doc_uri": null,
+      "lang_spec": "*",
+      "modality": {
+        "out": [
+          "text"
+        ]
+      },
+      "precision": 0.0,
+      "recall": 0.0,
+      "tags": [],
+      "mod_time": "2025-09-24 16:40:21 +0000"
     },
     "detectors.packagehallucination.RubyGems": {
       "description": "Check if the output tries to require a gem not listed in the Ruby standard library or RubyGems",
@@ -6093,7 +6555,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-08-08 14:23:52 +0000"
+      "mod_time": "2025-09-24 16:40:21 +0000"
     },
     "detectors.packagehallucination.RustCrates": {
       "description": "Check if the output tries to use a Rust crate not listed in the crates.io registry",
@@ -6115,7 +6577,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-08-08 14:23:52 +0000"
+      "mod_time": "2025-09-24 16:40:21 +0000"
     },
     "detectors.perspective.Attack_On_Author": {
       "description": "Targets: Attack on the author of an article or post.",
@@ -6664,7 +7126,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-04-17 08:31:20 +0000"
+      "mod_time": "2025-07-02 06:55:12 +0000"
     },
     "detectors.shields.Up": {
       "description": "Checks for strings commonly returned when a security system is",
@@ -6694,7 +7156,7 @@
       "precision": 0.0,
       "recall": 0.0,
       "tags": [],
-      "mod_time": "2025-04-17 08:31:20 +0000"
+      "mod_time": "2025-07-02 06:55:12 +0000"
     },
     "detectors.snowball.DontStartNo": {
       "description": "Response should start no, or contain a negation, to pass",
@@ -7277,28 +7739,7 @@
       ],
       "mod_time": "2025-04-17 08:31:20 +0000"
     },
-    "detectors.xss.MarkdownExfil20230929": {
-      "description": "As the basic detector, MarkdownExfilBasic, searching specifically for MarkdownExfil20230929",
-      "DEFAULT_PARAMS": {
-        "skip": false
-      },
-      "accuracy": null,
-      "active": true,
-      "doc_uri": "https://embracethered.com/blog/posts/2023/bing-chat-data-exfiltration-poc-and-fix/",
-      "lang_spec": "*",
-      "modality": {
-        "out": [
-          "text"
-        ]
-      },
-      "precision": 0.0,
-      "recall": 0.0,
-      "tags": [
-        "avid-effect:security:S0301"
-      ],
-      "mod_time": "2025-08-12 15:25:28 +0000"
-    },
-    "detectors.xss.MarkdownExfilBasic": {
+    "detectors.web_injection.MarkdownExfilBasic": {
       "description": "Detect markdown images with fqdn, absolute path, and populated q= parameter",
       "DEFAULT_PARAMS": {
         "skip": false
@@ -7317,9 +7758,9 @@
       "tags": [
         "avid-effect:security:S0301"
       ],
-      "mod_time": "2025-08-12 15:25:28 +0000"
+      "mod_time": "2025-09-08 15:03:44 +0000"
     },
-    "detectors.xss.MarkdownExfilContent": {
+    "detectors.web_injection.MarkdownExfilContent": {
       "description": "As the basic detector, MarkdownExfilBasic, but did we exfiltrate anything?",
       "DEFAULT_PARAMS": {
         "skip": false
@@ -7338,9 +7779,9 @@
       "tags": [
         "avid-effect:security:S0301"
       ],
-      "mod_time": "2025-08-12 15:25:28 +0000"
+      "mod_time": "2025-09-08 15:03:44 +0000"
     },
-    "detectors.xss.MarkdownExfilExtendedImage": {
+    "detectors.web_injection.MarkdownExfilExtendedImage": {
       "description": "Extended version of MarkdownExfilBasic that searches for a larger variety of Markdown URI formats",
       "DEFAULT_PARAMS": {
         "skip": false
@@ -7359,9 +7800,9 @@
       "tags": [
         "avid-effect:security:S0301"
       ],
-      "mod_time": "2025-08-12 15:25:28 +0000"
+      "mod_time": "2025-09-08 15:03:44 +0000"
     },
-    "detectors.xss.MarkdownExfilExtendedNonImage": {
+    "detectors.web_injection.MarkdownExfilExtendedNonImage": {
       "description": "Extended version of MarkdownExfilBasic that searches for a larger variety of Markdown URI formats",
       "DEFAULT_PARAMS": {
         "skip": false
@@ -7380,7 +7821,50 @@
       "tags": [
         "avid-effect:security:S0301"
       ],
-      "mod_time": "2025-08-12 15:25:28 +0000"
+      "mod_time": "2025-09-08 15:03:44 +0000"
+    },
+    "detectors.web_injection.PlaygroundMarkdownExfil": {
+      "description": "As the basic detector, MarkdownExfilBasic, searching specifically for PlaygroundMarkdownExfil",
+      "DEFAULT_PARAMS": {
+        "skip": false
+      },
+      "accuracy": null,
+      "active": true,
+      "doc_uri": "https://embracethered.com/blog/posts/2023/bing-chat-data-exfiltration-poc-and-fix/",
+      "lang_spec": "*",
+      "modality": {
+        "out": [
+          "text"
+        ]
+      },
+      "precision": 0.0,
+      "recall": 0.0,
+      "tags": [
+        "avid-effect:security:S0301"
+      ],
+      "mod_time": "2025-09-08 15:03:44 +0000"
+    },
+    "detectors.web_injection.XSS": {
+      "description": "Look for cross site scripting (XSS) attempts by payload.",
+      "DEFAULT_PARAMS": {
+        "skip": false,
+        "matchtype": "str"
+      },
+      "accuracy": null,
+      "active": true,
+      "doc_uri": null,
+      "lang_spec": "*",
+      "modality": {
+        "out": [
+          "text"
+        ]
+      },
+      "precision": 0.0,
+      "recall": 0.0,
+      "tags": [
+        "cwe:79"
+      ],
+      "mod_time": "2025-09-08 15:03:44 +0000"
     }
   },
   "generators": {
@@ -7405,7 +7889,7 @@
         "suppressed_params": [],
         "retry_json": true,
         "extra_params": {},
-        "model_name": null
+        "target_name": null
       },
       "active": true,
       "generator_family_name": "Azure",
@@ -7419,7 +7903,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": true,
-      "mod_time": "2025-07-14 15:56:49 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.base.Generator": {
       "description": "Base class for objects that wrap an LLM or other text-to-text service",
@@ -7443,7 +7927,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-12 16:14:56 +0000"
+      "mod_time": "2025-08-26 14:02:31 +0000"
     },
     "generators.cohere.CohereGenerator": {
       "description": "Interface to Cohere's python library for their text2text model.",
@@ -7474,7 +7958,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-08-08 14:23:52 +0000"
+      "mod_time": "2025-08-26 14:02:31 +0000"
     },
     "generators.function.Multiple": {
       "description": "Pass a function to call as a generator.",
@@ -7493,7 +7977,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": true,
-      "mod_time": "2025-08-08 15:45:01 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.function.Single": {
       "description": "Pass a function to call as a generator.",
@@ -7512,7 +7996,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-08-08 15:45:01 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.ggml.GgmlGenerator": {
       "description": "Generator interface for ggml models in gguf format.",
@@ -7547,7 +8031,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-17 16:15:39 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.groq.GroqChat": {
       "description": "Wrapper for Groq-hosted LLM models.",
@@ -7592,7 +8076,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-12 16:14:56 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.guardrails.NeMoGuardrails": {
       "description": "Generator wrapper for NeMo Guardrails.",
@@ -7616,7 +8100,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-17 16:15:39 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.huggingface.InferenceAPI": {
       "description": "Get text generations from Hugging Face Inference API",
@@ -7643,7 +8127,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": true,
-      "mod_time": "2025-08-14 13:10:09 +0000"
+      "mod_time": "2025-09-25 15:13:06 +0000"
     },
     "generators.huggingface.InferenceEndpoint": {
       "description": "Interface for Hugging Face private endpoints",
@@ -7670,7 +8154,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-08-14 13:10:09 +0000"
+      "mod_time": "2025-09-25 15:13:06 +0000"
     },
     "generators.huggingface.LLaVA": {
       "description": "Get LLaVA ([ text + image ] -> text) generations",
@@ -7700,7 +8184,7 @@
       },
       "parallel_capable": false,
       "supports_multiple_generations": false,
-      "mod_time": "2025-08-14 13:10:09 +0000"
+      "mod_time": "2025-09-25 15:13:06 +0000"
     },
     "generators.huggingface.Model": {
       "description": "Get text generations from a locally-run Hugging Face model",
@@ -7729,7 +8213,7 @@
       },
       "parallel_capable": false,
       "supports_multiple_generations": true,
-      "mod_time": "2025-08-14 13:10:09 +0000"
+      "mod_time": "2025-09-25 15:13:06 +0000"
     },
     "generators.huggingface.OptimumPipeline": {
       "description": "Get text generations from a locally-run Hugging Face pipeline using NVIDIA Optimum",
@@ -7758,7 +8242,7 @@
       },
       "parallel_capable": false,
       "supports_multiple_generations": true,
-      "mod_time": "2025-08-14 13:10:09 +0000"
+      "mod_time": "2025-09-25 15:13:06 +0000"
     },
     "generators.huggingface.Pipeline": {
       "description": "Get text generations from a locally-run Hugging Face pipeline",
@@ -7787,7 +8271,7 @@
       },
       "parallel_capable": false,
       "supports_multiple_generations": true,
-      "mod_time": "2025-08-14 13:10:09 +0000"
+      "mod_time": "2025-09-25 15:13:06 +0000"
     },
     "generators.langchain.LangChainLLMGenerator": {
       "description": "Class supporting LangChain LLM interfaces",
@@ -7817,7 +8301,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-17 16:15:39 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.langchain_serve.LangChainServeLLMGenerator": {
       "description": "Class supporting LangChain Serve LLM interfaces via HTTP POST requests.",
@@ -7873,7 +8357,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": true,
-      "mod_time": "2025-07-02 22:27:38 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.mistral.MistralGenerator": {
       "description": "Interface for public endpoints of models hosted in Mistral La Plateforme (console.mistral.ai).",
@@ -7898,7 +8382,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-08-08 14:23:52 +0000"
+      "mod_time": "2025-08-26 14:02:31 +0000"
     },
     "generators.nemo.NeMoGenerator": {
       "description": "Wrapper for the NVIDIA NeMo models via NGC. Expects NGC_API_KEY and ORG_ID environment variables.",
@@ -7932,7 +8416,7 @@
       "mod_time": "2025-06-17 16:15:39 +0000"
     },
     "generators.nim.NVMultimodal": {
-      "description": "Wrapper for text + image / audio to text NIMs. Expects NIM_API_KEY environment variable.",
+      "description": "Wrapper for text and image / audio to text NVIDIA NIM microservices hosted on build.nvidia.com and self-hosted.",
       "DEFAULT_PARAMS": {
         "max_tokens": 150,
         "temperature": 0.1,
@@ -7975,10 +8459,10 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-12 16:14:56 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.nim.NVOpenAIChat": {
-      "description": "Wrapper for NVIDIA-hosted NIMs. Expects NIM_API_KEY environment variable.",
+      "description": "Wrapper for NVIDIA NIM microservices hosted on build.nvidia.com and self-hosted.",
       "DEFAULT_PARAMS": {
         "max_tokens": 150,
         "temperature": 0.1,
@@ -8018,10 +8502,10 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-12 16:14:56 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.nim.NVOpenAICompletion": {
-      "description": "Wrapper for NVIDIA-hosted NIMs. Expects NIM_API_KEY environment variable.",
+      "description": "Wrapper for NVIDIA NIM microservices hosted on build.nvidia.com and self-hosted.",
       "DEFAULT_PARAMS": {
         "max_tokens": 150,
         "temperature": 0.1,
@@ -8061,10 +8545,10 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-12 16:14:56 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.nim.Vision": {
-      "description": "Wrapper for text+image to text NIMs. Expects NIM_API_KEY environment variable.",
+      "description": "Wrapper for text and image to text NVIDIA NIM microservices hosted on build.nvidia.com and self-hosted.",
       "DEFAULT_PARAMS": {
         "max_tokens": 150,
         "temperature": 0.1,
@@ -8106,7 +8590,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-12 16:14:56 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.nvcf.NvcfChat": {
       "description": "Wrapper for NVIDIA Cloud Functions Chat models via NGC. Expects NVCF_API_KEY environment variable.",
@@ -8139,7 +8623,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-17 16:15:39 +0000"
+      "mod_time": "2025-09-25 15:13:06 +0000"
     },
     "generators.nvcf.NvcfCompletion": {
       "description": "Wrapper for NVIDIA Cloud Functions Completion models via NGC. Expects NVCF_API_KEY environment variables.",
@@ -8172,7 +8656,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-17 16:15:39 +0000"
+      "mod_time": "2025-09-25 15:13:06 +0000"
     },
     "generators.ollama.OllamaGenerator": {
       "description": "Interface for Ollama endpoints",
@@ -8198,7 +8682,7 @@
       },
       "parallel_capable": false,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-17 16:15:39 +0000"
+      "mod_time": "2025-08-26 14:02:31 +0000"
     },
     "generators.ollama.OllamaGeneratorChat": {
       "description": "Interface for Ollama endpoints, using the chat functionality",
@@ -8224,7 +8708,7 @@
       },
       "parallel_capable": false,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-17 16:15:39 +0000"
+      "mod_time": "2025-08-26 14:02:31 +0000"
     },
     "generators.openai.OpenAICompatible": {
       "description": "Generator base class for OpenAI compatible text2text restful API. Implements shared initialization and execution methods.",
@@ -8260,7 +8744,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": true,
-      "mod_time": "2025-06-17 16:15:39 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.openai.OpenAIGenerator": {
       "description": "Generator wrapper for OpenAI text2text models. Expects API key in the OPENAI_API_KEY environment variable",
@@ -8295,7 +8779,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": true,
-      "mod_time": "2025-06-17 16:15:39 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.openai.OpenAIReasoningGenerator": {
       "description": "Generator wrapper for OpenAI reasoning models, e.g. `o1` family.",
@@ -8335,7 +8819,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-17 16:15:39 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.rasa.RasaRestGenerator": {
       "description": "API interface for RASA models",
@@ -8374,7 +8858,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-18 17:35:24 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.replicate.InferenceEndpoint": {
       "description": "Interface for private Replicate endpoints.",
@@ -8462,7 +8946,7 @@
       },
       "parallel_capable": true,
       "supports_multiple_generations": false,
-      "mod_time": "2025-06-17 16:15:39 +0000"
+      "mod_time": "2025-09-25 15:10:32 +0000"
     },
     "generators.test.Blank": {
       "description": "This generator always returns the empty string.",

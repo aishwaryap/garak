@@ -25,7 +25,7 @@ from PIL import Image
 
 from garak import _config
 from garak.attempt import Message, Conversation
-from garak.exception import ModelNameMissingError, GarakException
+from garak.exception import TargetNameMissingError, GarakException
 from garak.generators.base import Generator
 from garak.resources.api.huggingface import HFCompatible
 
@@ -91,6 +91,7 @@ class Pipeline(Generator, HFCompatible):
             self.generator.tokenizer = AutoTokenizer.from_pretrained(
                 pipeline_kwargs["model"]
             )
+        self.tokenizer = self.generator.tokenizer
         if not hasattr(self, "use_chat"):
             self.use_chat = (
                 hasattr(self.generator.tokenizer, "chat_template")
@@ -106,12 +107,7 @@ class Pipeline(Generator, HFCompatible):
 
     def _clear_client(self):
         self.generator = None
-
-    def _format_chat_prompt(self, chat_conversation: Conversation) -> List[dict]:
-        return [
-            {"role": turn.role, "content": turn.content.text}
-            for turn in chat_conversation.turns
-        ]
+        self.tokenizer = None
 
     def _call_model(
         self, prompt: Conversation, generations_this_call: int = 1
@@ -125,7 +121,7 @@ class Pipeline(Generator, HFCompatible):
                     # chat template should be automatically utilized if the pipeline tokenizer has support
                     # and a properly formatted list[dict] is supplied
                     if self.use_chat:
-                        formatted_prompt = self._format_chat_prompt(prompt)
+                        formatted_prompt = self._conversation_to_list(prompt)
                     else:
                         formatted_prompt = prompt.last_message().text
 
@@ -260,7 +256,7 @@ class InferenceAPI(Generator):
         import requests
 
         payload = {
-            "inputs": prompt,
+            "messages": self._conversation_to_list(prompt),
             "parameters": {
                 "return_full_text": not self.deprefix_prompt,
                 "num_return_sequences": generations_this_call,
@@ -369,7 +365,7 @@ class InferenceEndpoint(InferenceAPI):
         import requests
 
         payload = {
-            "inputs": prompt,
+            "messages": self._conversation_to_list(prompt),
             "parameters": {
                 "return_full_text": not self.deprefix_prompt,
                 "max_time": self.max_time,
@@ -473,7 +469,7 @@ class Model(Pipeline, HFCompatible):
             with torch.no_grad():
                 if self.use_chat:
                     formatted_prompt = self.tokenizer.apply_chat_template(
-                        self._format_chat_prompt(prompt),
+                        self._conversation_to_list(prompt),
                         tokenize=False,
                         add_generation_prompt=True,
                     )
@@ -556,7 +552,7 @@ class LLaVA(Generator, HFCompatible):
             self.name = name
 
         if self.name not in self.supported_models:
-            raise ModelNameMissingError(
+            raise TargetNameMissingError(
                 f"Invalid model name {self.name}, current support: {self.supported_models}."
             )
         super().__init__(self.name, config_root=config_root)

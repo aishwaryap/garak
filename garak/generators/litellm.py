@@ -24,7 +24,7 @@ When invoking garak, specify the path to the generator option file:
 
 .. code-block:: bash
 
-   python -m garak --model_type litellm --model_name "phi" --generator_option_file ollama_base.json -p dan
+   python -m garak --target_type litellm --target_name "phi" --generator_option_file ollama_base.json -p dan
 """
 
 import logging
@@ -125,11 +125,8 @@ class LiteLLMGenerator(Generator):
         self, prompt: Conversation, generations_this_call: int = 1
     ) -> List[Union[Message, None]]:
         if isinstance(prompt, Conversation):
-            litellm_prompt = []
-            for turn in prompt.turns:
-                litellm_prompt.append({"role": turn.role, "content": turn.content.text})
+            litellm_prompt = self._conversation_to_list(prompt)
         elif isinstance(prompt, list):
-            # should we maintain support for list here?
             litellm_prompt = prompt
         else:
             msg = (

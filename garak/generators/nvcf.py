@@ -13,7 +13,7 @@ import requests
 
 from garak import _config
 from garak.attempt import Message, Conversation
-from garak.exception import ModelNameMissingError, BadGeneratorException
+from garak.exception import TargetNameMissingError, BadGeneratorException
 from garak.generators.base import Generator
 
 
@@ -45,7 +45,7 @@ class NvcfChat(Generator):
         )
 
         if self.name is None:
-            raise ModelNameMissingError(
+            raise TargetNameMissingError(
                 "Please specify a function identifier in model name (-n)"
             )
 
@@ -62,9 +62,7 @@ class NvcfChat(Generator):
         }
 
     def _build_payload(self, prompt: Conversation) -> dict:
-        messages = []
-        for turn in prompt.turns:
-            messages.append({"role": turn.role, "content": turn.content.text})
+        messages = self._conversation_to_list(prompt)
 
         payload = {
             "messages": messages,

@@ -31,7 +31,7 @@ class NeMoGuardrails(Generator):
         self._load_config(config_root)
         self.fullname = f"Guardrails {self.name}"
 
-        # Currently, we use the model_name as the path to the config
+        # Currently, we use the target_name as the path to the config
         with redirect_stderr(io.StringIO()) as f:  # quieten the tqdm
             config = RailsConfig.from_path(self.name)
             self.rails = LLMRails(config=config)
@@ -43,7 +43,7 @@ class NeMoGuardrails(Generator):
     ) -> List[Union[Message, None]]:
         with redirect_stderr(io.StringIO()) as f:  # quieten the tqdm
             # should this be expanded to process all Conversation messages?
-            result = self.rails.generate(prompt.last_message().text)
+            result = self.rails.generate(messages=self._conversation_to_list(prompt))
 
         if isinstance(result, str):
             return [Message(result)]

@@ -59,7 +59,7 @@ def test_pipeline_chat(mocker, hf_generator_config):
         "microsoft/DialoGPT-small", config_root=hf_generator_config
     )
     mock_format = mocker.patch.object(
-        g, "_format_chat_prompt", wraps=g._format_chat_prompt
+        g, "_conversation_to_list", wraps=g._conversation_to_list
     )
     conv = Conversation([Turn("user", Message("Hello world!"))])
     output = g.generate(conv)
@@ -70,21 +70,21 @@ def test_pipeline_chat(mocker, hf_generator_config):
 
 
 def test_inference(mocker, hf_mock_response, hf_generator_config):
-    model_name = "gpt2"
+    target_name = "gpt2"
     mock_request = mocker.patch.object(
         requests, "request", return_value=hf_mock_response
     )
 
     g = garak.generators.huggingface.InferenceAPI(
-        model_name, config_root=hf_generator_config
+        target_name, config_root=hf_generator_config
     )
-    assert g.name == model_name
-    assert model_name in g.uri
+    assert g.name == target_name
+    assert target_name in g.uri
 
-    hf_generator_config.generators["huggingface"]["name"] = model_name
+    hf_generator_config.generators["huggingface"]["name"] = target_name
     g = garak.generators.huggingface.InferenceAPI(config_root=hf_generator_config)
-    assert g.name == model_name
-    assert model_name in g.uri
+    assert g.name == target_name
+    assert target_name in g.uri
     assert isinstance(g.max_tokens, int)
     g.max_tokens = 99
     assert g.max_tokens == 99
@@ -99,19 +99,19 @@ def test_inference(mocker, hf_mock_response, hf_generator_config):
 
 
 def test_endpoint(mocker, hf_mock_response, hf_generator_config):
-    model_name = "https://localhost:8000/gpt2"
+    target_name = "https://localhost:8000/gpt2"
     mock_request = mocker.patch.object(requests, "post", return_value=hf_mock_response)
 
     g = garak.generators.huggingface.InferenceEndpoint(
-        model_name, config_root=hf_generator_config
+        target_name, config_root=hf_generator_config
     )
-    assert g.name == model_name
-    assert g.uri == model_name
+    assert g.name == target_name
+    assert g.uri == target_name
 
-    hf_generator_config.generators["huggingface"]["name"] = model_name
+    hf_generator_config.generators["huggingface"]["name"] = target_name
     g = garak.generators.huggingface.InferenceEndpoint(config_root=hf_generator_config)
-    assert g.name == model_name
-    assert g.uri == model_name
+    assert g.name == target_name
+    assert g.uri == target_name
     assert isinstance(g.max_tokens, int)
     g.max_tokens = 99
     assert g.max_tokens == 99
@@ -149,7 +149,7 @@ def test_model_chat(mocker, hf_generator_config):
         "microsoft/DialoGPT-small", config_root=hf_generator_config
     )
     mock_format = mocker.patch.object(
-        g, "_format_chat_prompt", wraps=g._format_chat_prompt
+        g, "_conversation_to_list", wraps=g._conversation_to_list
     )
     conv = Conversation([Turn("user", Message("Hello world!"))])
     output = g.generate(conv)
